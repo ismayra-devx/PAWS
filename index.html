@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2">
+  <!-- PDF.js for client-side PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Tesseract.js for image OCR extraction -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -610,43 +614,23 @@
 
           <!-- Pane 3: Medications -->
           <div id="passport-pane-medications" class="passport-pane" style="display: none;">
-            <h3 style="margin-bottom: 14px;">Medications</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <div style="background: var(--sage-tint); padding: 14px 16px; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                  <span style="font-weight: 800; font-size: 15px; color: var(--primary-forest);">Cetirizine (10mg)</span>
-                  <span class="provider-tag-pill" style="background: var(--primary-forest); color: white;">Active</span>
-                </div>
-                <div style="font-size: 13px; font-weight: 600;">Dosage: 1 tablet once daily after meal</div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Prescribed by Dr. Sen for environmental skin pruritus/allergy.</div>
-              </div>
-              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-weight: 700; font-size: 14px;">Antiseptic Saline Wipe</span>
-                  <span style="font-size: 12px; color: var(--text-muted);">Completed Jul 2026</span>
-                </div>
-              </div>
+            <h3 style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <span>Medications</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Active & Historical</span>
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;" id="medications-list-container">
+              <!-- Dynamically populated from state.passport.medications -->
             </div>
           </div>
 
           <!-- Pane 4: Reports -->
           <div id="passport-pane-reports" class="passport-pane" style="display: none;">
-            <h3 style="margin-bottom: 14px;">Uploaded Medical Reports</h3>
+            <h3 style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <span>Uploaded Medical Reports</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Verified Archives</span>
+            </h3>
             <div style="display: flex; flex-direction: column; gap: 10px;" id="reports-list-container">
-              <div class="uploaded-report-box" onclick="triggerReportUpload('blood_report_august.pdf')">
-                <div class="report-file-name">
-                  <span>blood_report_august.pdf</span>
-                  <span style="font-size: 14px;">📄</span>
-                </div>
-                <div class="report-file-status">AI Organised • 14 biomarkers extracted</div>
-              </div>
-              <div class="uploaded-report-box" onclick="triggerReportUpload('dermatology_prescription.pdf')">
-                <div class="report-file-name">
-                  <span>dermatology_prescription.pdf</span>
-                  <span style="font-size: 14px;">📄</span>
-                </div>
-                <div class="report-file-status">Prescription OCR • Cetirizine detected</div>
-              </div>
+              <!-- Dynamically populated from state.passport.reports -->
             </div>
           </div>
 
@@ -674,30 +658,36 @@
             <h2 class="ai-organiser-title">Upload a report →<br>PAWS extracts what matters.</h2>
           </div>
 
-          <!-- Document Upload Box with preset options -->
-          <div class="uploaded-report-box" onclick="triggerReportUpload('blood_report_august.pdf')" title="Click to process with AI">
+          <!-- Selected File Preview Card (Shows selected filename before processing) -->
+          <div class="selected-file-preview has-file" id="selected-file-preview-card" title="Currently selected document">
             <div class="report-file-name">
-              <span>blood_report_august.pdf</span>
-              <span style="font-size: 14px;">📄</span>
+              <span id="selected-file-name" style="font-weight: 750;">Bruno_Blood_Report.pdf</span>
+              <span class="file-badge-tag" id="selected-file-badge">PDF</span>
             </div>
-            <div class="report-file-status">CBC Blood Panel • 14 fields ready</div>
+            <div class="report-file-status" id="selected-file-status">Selected & ready • 14 biomarkers & Cetirizine</div>
           </div>
 
-          <!-- Hidden File Input for Custom Uploads -->
-          <input type="file" id="report-file-picker" style="display: none;" onchange="handleCustomReportSelect(event)">
-          
-          <button class="btn-card-directions" style="width: 100%; justify-content: center; margin-bottom: 10px;" onclick="document.getElementById('report-file-picker').click()">
-            📁 Choose Another Report / PDF
+          <!-- Hidden File Input for Custom Uploads (accepts PDF, JPG, PNG) -->
+          <input type="file" id="report-file-picker" accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg" style="display: none;" onchange="handleReportFileSelect(event)">
+
+          <!-- Primary CTA: Process Report -->
+          <button class="btn-process-report" id="btn-process-report" onclick="processSelectedReport()">
+            <span>⚡</span> Process Report
           </button>
 
-          <!-- Action CTA -->
-          <button class="btn-view-summary" onclick="triggerReportUpload('blood_report_august.pdf')">
-            Upload & Process with PAWS AI
+          <!-- Secondary Action: Choose file -->
+          <button class="btn-card-directions" style="width: 100%; justify-content: center; margin-bottom: 8px; font-weight: 700;" onclick="document.getElementById('report-file-picker').click()">
+            📁 Choose File (PDF / JPG / PNG)
           </button>
 
-          <!-- Disclaimer -->
+          <!-- Quick Sample Action for Demo / Screening -->
+          <button class="btn-sample-report" onclick="selectSampleReport()">
+            <span>📋</span> Select Sample Report (Bruno_Blood_Report.pdf)
+          </button>
+
+          <!-- AI Safety Disclaimer -->
           <p class="ai-organiser-disclaimer">
-            AI helps organise information — It does not diagnose.
+            AI organises information from the uploaded document. It does not diagnose the animal.
           </p>
         </div>
 
@@ -711,92 +701,31 @@
     <section id="screen-04" class="screen-pane">
       <div class="screen-title-group">
         <h1 class="screen-heading">Report summary</h1>
-        <p class="screen-subheading">Blood report • uploaded Aug 28 • Organised by PAWS AI</p>
+        <p class="screen-subheading" id="screen04-subheading">Blood report • uploaded Aug 28 • Organised by PAWS AI</p>
+      </div>
+
+      <!-- Mode / Source Verification Banner (Genuine AI vs Demo Mode) -->
+      <div id="screen04-source-banner" class="summary-mode-banner demo-mode" style="display: flex;">
+        <span style="font-size: 18px;">ℹ️</span>
+        <div>
+          <strong>Verified Sample Report (Demo Mode):</strong> Extracted from <code>Bruno_Blood_Report.pdf</code>. Connect a server-side AI key to process arbitrary documents with Google Gemini or OpenAI.
+        </div>
       </div>
 
       <!-- What PAWS Found Status Card -->
       <div class="summary-status-card">
         <div class="summary-status-title">What PAWS found</div>
-        <div class="summary-badges-wrap">
-          <span class="badge-extracted">14 details extracted</span>
-          <span class="badge-discuss" style="background: #FFF4E5; color: #8C551C; font-weight: 700;">1 medication detected</span>
-          <span class="badge-discuss">1 follow-up reminder</span>
-          <span class="summary-safe-notice">AI helps organise information and does not provide a veterinary diagnosis.</span>
+        <div class="summary-badges-wrap" id="screen04-badges-wrap">
+          <span class="badge-extracted" id="badge-measurements-count">14 details extracted</span>
+          <span class="badge-discuss" id="badge-medications-count" style="background: #FFF4E5; color: #8C551C; font-weight: 700;">1 medication detected</span>
+          <span class="badge-discuss" id="badge-reminders-count">1 follow-up reminder</span>
+          <span class="summary-safe-notice">AI organises information from the uploaded document. It does not diagnose the animal.</span>
         </div>
       </div>
 
-      <!-- Stacked Insights Cards -->
-      <div class="summary-cards-stack">
-
-        <!-- Card 1: Key Information -->
-        <div class="summary-item-card">
-          <div class="summary-card-tag">Key information</div>
-          <div class="summary-card-main">Haemoglobin: 12.8 g/dL • WBC: 9.2 × 10³/µL</div>
-          <div class="summary-card-sub">Extracted from the uploaded report</div>
-          
-          <button class="panel-expand-btn" id="btn-expand-labs" onclick="toggleLabPanel()">
-            Show full lab panel (14 values) ▾
-          </button>
-
-          <!-- Complete Lab Table -->
-          <table class="lab-breakdown-table" id="full-lab-table">
-            <thead>
-              <tr>
-                <th>Biomarker</th>
-                <th>Measured Value</th>
-                <th>Canine Reference Range</th>
-                <th>Interpretation Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Haemoglobin (Hb)</td>
-                <td>12.8 g/dL</td>
-                <td>12.0 – 18.0 g/dL</td>
-                <td><span class="lab-status-normal">Normal</span></td>
-              </tr>
-              <tr>
-                <td>White Blood Cells (WBC)</td>
-                <td>9.2 × 10³/µL</td>
-                <td>6.0 – 17.0 × 10³/µL</td>
-                <td><span class="lab-status-normal">Normal</span></td>
-              </tr>
-              <tr>
-                <td>Eosinophils</td>
-                <td>1.4 × 10³/µL</td>
-                <td>0.1 – 1.2 × 10³/µL</td>
-                <td><span class="lab-status-flag">Mild Elevation (Discuss allergy/parasite)</span></td>
-              </tr>
-              <tr>
-                <td>Serum Creatinine</td>
-                <td>1.5 mg/dL</td>
-                <td>0.5 – 1.4 mg/dL</td>
-                <td><span class="lab-status-flag">Borderline (Discuss hydration)</span></td>
-              </tr>
-              <tr>
-                <td>Platelets</td>
-                <td>280 × 10³/µL</td>
-                <td>175 – 500 × 10³/µL</td>
-                <td><span class="lab-status-normal">Normal</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Card 2: Medication Mention -->
-        <div class="summary-item-card">
-          <div class="summary-card-tag">Medication</div>
-          <div class="summary-card-main">Cetirizine · once daily</div>
-          <div class="summary-card-sub">Detected in the attached prescription for skin allergy</div>
-        </div>
-
-        <!-- Card 3: Follow-Up Cue -->
-        <div class="summary-item-card">
-          <div class="summary-card-tag">Follow-up</div>
-          <div class="summary-card-main">Follow-up mentioned in report.</div>
-          <div class="summary-card-sub">AI helps organise information and does not provide a veterinary diagnosis.</div>
-        </div>
-
+      <!-- Dynamic Stacked Insights Cards -->
+      <div class="summary-cards-stack" id="screen04-cards-stack">
+        <!-- Rendered dynamically by renderScreen04() in app.js -->
       </div>
 
       <!-- Bottom Loop Closer Banner -->
@@ -952,36 +881,58 @@
        AI Report Processing Modal (PAWS AI is organising your report...)
        ====================================================================== -->
   <div class="modal-overlay" id="ai-processing-modal">
-    <div class="modal-dialog" style="max-width: 460px;">
+    <div class="modal-dialog" style="max-width: 470px;">
       <div class="modal-body ai-processing-box">
-        <div class="ai-pulse-icon">🐾</div>
+        <div class="ai-pulse-icon" id="ai-pulse-icon">🐾</div>
         <h3 id="ai-modal-status-title" style="font-size: 20px; font-weight: 800; color: var(--primary-forest); margin-bottom: 6px;">
-          Uploading...
+          Extracting text...
         </h3>
-        <p style="font-size: 13px; color: var(--text-muted);">
+        <p style="font-size: 13px; color: var(--text-muted);" id="ai-modal-status-desc">
           Extracting clinical biomarkers, active medications, and safe vet follow-ups.
         </p>
 
         <!-- Progress Track -->
-        <div class="ai-progress-track">
+        <div class="ai-progress-track" id="ai-progress-track">
           <div class="ai-progress-bar-fill" id="ai-progress-bar-fill"></div>
         </div>
 
         <!-- Step List -->
-        <div class="ai-steps-list">
-          <div class="ai-step-row completed" id="ai-step-1">
-            <span class="step-icon">✓</span>
-            <span>1. Scanning document layout & OCR text extraction</span>
+        <div class="ai-steps-list" id="ai-steps-list">
+          <div class="ai-step-row pending" id="ai-step-1">
+            <span class="step-icon">⏳</span>
+            <span id="ai-step-1-label">1. Extracting document text (PDF / OCR)</span>
           </div>
           <div class="ai-step-row pending" id="ai-step-2">
             <span class="step-icon">⏳</span>
-            <span>2. Normalizing 14 canine biomarkers to standard reference ranges</span>
+            <span id="ai-step-2-label">2. Communicating with serverless AI engine</span>
           </div>
           <div class="ai-step-row pending" id="ai-step-3">
             <span class="step-icon">⏳</span>
-            <span>3. Detecting medication (Cetirizine) & vet follow-up cues</span>
+            <span id="ai-step-3-label">3. Structuring medications, biomarkers & follow-ups</span>
           </div>
         </div>
+
+        <!-- Error & Fallback Container (hidden during normal flow) -->
+        <div id="ai-modal-error-box" style="display: none; margin-top: 18px; text-align: left; background: #FFF4F2; border: 1.5px solid #F5C6CB; border-radius: var(--radius-sm); padding: 14px 16px;">
+          <div style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="font-size: 18px;">⚠️</span>
+            <div>
+              <h4 style="font-size: 14px; font-weight: 750; color: var(--emergency-dark); margin-bottom: 4px;" id="ai-modal-error-title">Processing Error</h4>
+              <p style="font-size: 13px; color: #721C24; line-height: 1.4; margin-bottom: 12px;" id="ai-modal-error-message">
+                We couldn't process this report right now. Please try again.
+              </p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="btn-card-directions" style="padding: 6px 14px; font-size: 12.5px;" onclick="closeAiProcessingModal()">
+              Close
+            </button>
+            <button class="btn-card-call" id="btn-modal-demo-fallback" style="padding: 6px 14px; font-size: 12.5px;" onclick="closeAiProcessingModal(); selectSampleReport(); processSelectedReport(true);">
+              🧪 Try Sample Report (Demo Mode)
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

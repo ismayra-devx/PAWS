@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     triageSelectedIssue: 'Trauma / Acute Bleeding',
     
     // Living Passport Data
+    selectedReportFile: null,
+    currentExtractedReport: null,
     passport: {
       animal: {
         name: 'Bruno',
@@ -50,6 +52,58 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 't-1', date: 'Aug 28', title: 'Blood report uploaded', desc: 'AI extracted 14 key values • 2 flagged for discussion', isNew: false },
         { id: 't-2', date: 'Aug 10', title: 'Vet visit', desc: 'Skin allergy discussed with Dr. Ananya Sen', isNew: false },
         { id: 't-3', date: 'Jul 02', title: 'Vaccination', desc: 'Rabies vaccine administered • completed', isNew: false }
+      ],
+      medications: [
+        {
+          id: 'med-1',
+          name: 'Cetirizine (10mg)',
+          dosage: '1 tablet once daily after meal',
+          frequency: 'Once daily',
+          status: 'Active',
+          indication: 'Prescribed by Dr. Sen for environmental skin pruritus/allergy.',
+          dateAdded: 'Aug 10',
+          isNew: false
+        },
+        {
+          id: 'med-2',
+          name: 'Antiseptic Saline Wipe',
+          dosage: 'As needed for paw cleaning',
+          frequency: 'As needed',
+          status: 'Completed',
+          indication: 'Completed Jul 2026',
+          dateAdded: 'Jul 02',
+          isNew: false
+        }
+      ],
+      reports: [
+        {
+          id: 'rep-1',
+          fileName: 'blood_report_august.pdf',
+          date: '28 Aug 2026',
+          statusText: 'AI Organised • 14 biomarkers extracted',
+          isNew: false
+        },
+        {
+          id: 'rep-2',
+          fileName: 'dermatology_prescription.pdf',
+          date: '10 Aug 2026',
+          statusText: 'Prescription OCR • Cetirizine detected',
+          isNew: false
+        }
+      ],
+      reminders: [
+        {
+          id: 'rem-1',
+          text: 'Rabies vaccination due in 20 days',
+          type: 'vaccine',
+          isNew: false
+        },
+        {
+          id: 'rem-2',
+          text: 'Follow-up check-in scheduled',
+          type: 'follow_up',
+          isNew: false
+        }
       ],
       rescueTimeline: [
         { id: 'rt-1', date: 'Today (18:40)', title: 'Street Rescue & Triage Initiated', desc: 'Rescued near Sector Alpha II round-about with left paw limp.', isNew: false }
@@ -678,6 +732,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ==========================================================================
+  // PASSPORT STATE PERSISTENCE & DYNAMIC RENDERING (Step 7 & 8)
+  // ==========================================================================
+  const PASSPORT_STORAGE_KEY = 'paws_living_passport_v2';
+
+  function savePassportState() {
+    try {
+      localStorage.setItem(PASSPORT_STORAGE_KEY, JSON.stringify(state.passport));
+    } catch (e) {
+      console.warn('Could not save passport to localStorage:', e);
+    }
+  }
+
+  function loadPassportState() {
+    try {
+      const saved = localStorage.getItem(PASSPORT_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          if (Array.isArray(parsed.timeline)) state.passport.timeline = parsed.timeline;
+          if (Array.isArray(parsed.medications)) state.passport.medications = parsed.medications;
+          if (Array.isArray(parsed.reports)) state.passport.reports = parsed.reports;
+          if (Array.isArray(parsed.reminders)) state.passport.reminders = parsed.reminders;
+          if (parsed.animal) state.passport.animal = { ...state.passport.animal, ...parsed.animal };
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load passport from localStorage:', e);
+    }
+  }
+
   function renderBrunoTimeline() {
     const feed = document.getElementById('passport-timeline-feed');
     if (!feed) return;
@@ -694,6 +779,84 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `).join('');
   }
+
+  function renderBrunoMedications() {
+    const container = document.getElementById('medications-list-container');
+    if (!container) return;
+    const meds = state.passport.medications || [];
+    if (meds.length === 0) {
+      container.innerHTML = `
+        <div style="background: var(--bg-card-subtle); padding: 24px; border-radius: 12px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+          No active medications recorded yet. Upload a prescription or report to add medications.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = meds.map(med => `
+      <div style="background: ${med.status === 'Active' ? 'var(--sage-tint)' : 'var(--bg-card-subtle)'}; padding: 14px 16px; border-radius: 12px; ${med.isNew ? 'border: 2px solid var(--primary-forest);' : ''}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-weight: 800; font-size: 15px; color: ${med.status === 'Active' ? 'var(--primary-forest)' : 'var(--text-main)'};">
+            ${med.name} ${med.isNew ? '<span class="badge-new-item">NEW</span>' : ''}
+          </span>
+          <span class="provider-tag-pill" style="${med.status === 'Active' ? 'background: var(--primary-forest); color: white;' : 'background: #E0E4DF; color: var(--text-muted);'}">
+            ${med.status || 'Active'}
+          </span>
+        </div>
+        <div style="font-size: 13px; font-weight: 600;">Dosage: ${med.dosage || med.frequency || '1 tablet once daily'}</div>
+        ${med.instructions ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Instructions: ${med.instructions}</div>` : ''}
+        ${med.indication ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">${med.indication}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderBrunoReports() {
+    const container = document.getElementById('reports-list-container');
+    if (!container) return;
+    const reps = state.passport.reports || [];
+    if (reps.length === 0) {
+      container.innerHTML = `
+        <div style="background: var(--bg-card-subtle); padding: 24px; border-radius: 12px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+          No medical reports archived yet.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = reps.map(rep => `
+      <div class="uploaded-report-box ${rep.isNew ? 'just-added' : ''}" onclick="selectReportToView('${rep.id}')" style="${rep.isNew ? 'border: 2px solid var(--primary-forest); background: #F2F8F4;' : ''}">
+        <div class="report-file-name">
+          <span style="${rep.isNew ? 'font-weight: 750; color: var(--primary-forest);' : ''}">${rep.fileName}</span>
+          <span style="font-size: 14px;">${rep.isNew ? '✨ 📄' : '📄'}</span>
+        </div>
+        <div class="report-file-status" style="${rep.isNew ? 'color: var(--primary-forest); font-weight: 600;' : ''}">${rep.statusText || 'AI Organised'}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderBrunoAttention() {
+    const countText = document.getElementById('attention-count-text');
+    const pillsContainer = document.getElementById('attention-pills-container');
+    const reminders = state.passport.reminders || [];
+    if (countText) {
+      const count = reminders.length;
+      countText.innerText = count === 1 ? '1 thing needs your attention' : `${count} things need your attention`;
+    }
+    if (pillsContainer) {
+      pillsContainer.innerHTML = reminders.map(r => `
+        <span class="attention-pill-item" style="${r.isNew ? 'background: #E2ECE5; border: 1.5px solid var(--primary-forest); color: var(--primary-forest); font-weight: 750;' : ''}">
+          ${r.text}
+        </span>
+      `).join('');
+    }
+  }
+
+  window.selectReportToView = function(reportId) {
+    const rep = state.passport.reports.find(r => r.id === reportId);
+    if (rep) {
+      showToast(`📄 Viewing archived report: ${rep.fileName}`);
+    }
+  };
 
   function renderRescueTimeline() {
     const feed = document.getElementById('passport-timeline-feed');
@@ -801,77 +964,522 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================================================
-  // AI MEDICAL REPORT ORGANISER WORKFLOW (5-Step Experience)
-  // Step 1: Upload / Select ("Uploading...")
-  // Step 2: "PAWS AI is organising the report" (animated progress & steps)
-  // Step 3: "Report processed" -> 14 details extracted, 1 medication, 1 follow-up reminder
-  // Step 4: Structured lab panel + safety notice
-  // Step 5: Add to Care Passport -> updates health timeline, reports tab & reminders
+  // AI MEDICAL REPORT ORGANISER WORKFLOW (Genuine Serverless AI Workflow)
+  // Step 1: File selection (PDF, JPG, PNG) & preview
+  // Step 2: Document text extraction (pdf.js + Tesseract OCR)
+  // Step 3: Server-side AI call (/api/analyze-report)
+  // Step 4 & 5: Structured JSON extraction & normalization
+  // Step 6: Dynamic insights UI (Screen 04)
+  // Step 7: Add to Care Passport (timeline, reports, medications, reminders)
+  // Step 8: Local persistence
+  // Step 9 & 10: Robust error handling & sample report demo fallback
   // ==========================================================================
-  window.triggerReportUpload = function(fileName = 'blood_report_august.pdf') {
-    const procModal = document.getElementById('ai-processing-modal');
+
+  const SAMPLE_VET_REPORT_TEXT = `PATIENT LAB REPORT - GREEN PAWS VETERINARY CLINIC
+Sector 14, Ring Road, Greater Noida | Phone: +91 98100 12345
+Accredited Veterinary Diagnostic Laboratory
+
+PATIENT & OWNER INFORMATION:
+Patient Name: Bruno
+Species: Canine
+Breed: Golden Retriever
+Age: 4 years
+Gender: Male (Neutered)
+Weight: 31.5 kg
+Microchip ID: #98514100234
+Parent / Caregiver: Ismayra
+Attending Veterinarian: Dr. Ananya Sen (BVSc & AH, MVSc)
+Report Date: 28 Aug 2026
+
+DIAGNOSTIC TEST: COMPLETE BLOOD COUNT (CBC) & BIOCHEMISTRY PROFILE
+--------------------------------------------------------------------------------
+Biomarker                   Measured Value    Canine Reference Range    Status
+--------------------------------------------------------------------------------
+Haemoglobin (Hb)            12.8 g/dL         12.0 - 18.0 g/dL          Normal
+Packed Cell Volume (PCV)    38.5 %            37.0 - 55.0 %             Normal
+Total RBC Count             6.1 x 10^6/uL     5.5 - 8.5 x 10^6/uL       Normal
+Total WBC Count             9.2 x 10^3/uL     6.0 - 17.0 x 10^3/uL      Normal
+Neutrophils                 68 %              60 - 77 %                 Normal
+Lymphocytes                 22 %              12 - 30 %                 Normal
+Eosinophils                 1.4 x 10^3/uL     0.1 - 1.2 x 10^3/uL       Mild Elevation
+Serum Creatinine            1.5 mg/dL         0.5 - 1.4 mg/dL           Borderline
+Blood Urea Nitrogen (BUN)   22 mg/dL          7 - 27 mg/dL              Normal
+Total Platelet Count        280 x 10^3/uL     175 - 500 x 10^3/uL       Normal
+Total Serum Protein         6.8 g/dL          5.4 - 7.5 g/dL            Normal
+Serum Albumin               3.2 g/dL          2.3 - 4.0 g/dL            Normal
+Alanine Aminotransferase    45 U/L            10 - 100 U/L              Normal
+Blood Glucose (Fasting)     95 mg/dL          70 - 143 mg/dL            Normal
+--------------------------------------------------------------------------------
+
+CLINICAL INTERPRETATION & CONDITIONS MENTIONED:
+Eosinophil count is mildly elevated (1.4 x 10^3/uL), consistent with active environmental allergic dermatitis and mild pruritus.
+Borderline creatinine (1.5 mg/dL) suggests mild sub-hydration; increase oral hydration.
+Platelets, RBC and liver enzymes are within normal canine limits.
+
+MEDICATIONS PRESCRIBED:
+1. Cetirizine 10mg
+   Dosage & Frequency: 1 tablet once daily after meal for 14 days.
+   Indication: Pruritus and allergic dermatitis management.
+
+FOLLOW-UP INSTRUCTIONS:
+Clinical recheck scheduled in 14 days on 11 Sep 2026 for allergy assessment and hydration check.
+Annual Rabies vaccination booster due in 20 days (17 Sep 2026).
+Contact clinic immediately if pruritus worsens or lethargy develops.`;
+
+  // STEP 1 — FILE SELECTION & DISPLAY
+  window.handleReportFileSelect = function(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+
+    const lower = file.name.toLowerCase();
+    const isSupported = lower.endsWith('.pdf') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') ||
+      file.type.startsWith('image/') || file.type === 'application/pdf';
+
+    if (!isSupported) {
+      showToast('⚠️ Please upload a PDF or supported image.');
+      event.target.value = '';
+      return;
+    }
+
+    state.selectedReportFile = file;
+    const format = lower.endsWith('.pdf') ? 'PDF' : 'IMAGE';
+    const sizeKb = (file.size / 1024).toFixed(1);
+    updateSelectedFileUI(file.name, format, `Selected file • ${sizeKb} KB • Ready to process`);
+    showToast(`📄 Selected: ${file.name}`);
+  };
+
+  window.selectSampleReport = function() {
+    state.selectedReportFile = {
+      isSample: true,
+      name: 'Bruno_Blood_Report.pdf',
+      textPath: 'sample_reports/Bruno_Blood_Report.txt'
+    };
+    updateSelectedFileUI('Bruno_Blood_Report.pdf', 'PDF', 'Verified Sample Report • 14 biomarkers & Cetirizine');
+    showToast('📋 Selected sample report: Bruno_Blood_Report.pdf');
+  };
+
+  function updateSelectedFileUI(name, badge, status) {
+    const nameEl = document.getElementById('selected-file-name');
+    const badgeEl = document.getElementById('selected-file-badge');
+    const statusEl = document.getElementById('selected-file-status');
+    const cardEl = document.getElementById('selected-file-preview-card');
+    const procBtn = document.getElementById('btn-process-report');
+
+    if (nameEl) nameEl.innerText = name;
+    if (badgeEl) badgeEl.innerText = badge;
+    if (statusEl) statusEl.innerText = status;
+    if (cardEl) cardEl.classList.add('has-file');
+    if (procBtn) {
+      procBtn.disabled = false;
+      procBtn.innerHTML = `<span>⚡</span> Process Report`;
+    }
+  }
+
+  // STEP 2 — DOCUMENT TEXT EXTRACTION
+  async function extractDocumentText(fileOrSample) {
+    if (fileOrSample?.isSample) {
+      try {
+        const resp = await fetch(fileOrSample.textPath || 'sample_reports/Bruno_Blood_Report.txt');
+        if (resp.ok) {
+          const text = await resp.text();
+          return { success: true, text: text.trim(), isSample: true };
+        }
+      } catch (err) {
+        console.warn('Could not fetch sample report file over HTTP, using embedded fallback:', err);
+      }
+      return { success: true, text: SAMPLE_VET_REPORT_TEXT, isSample: true };
+    }
+
+    const file = fileOrSample;
+    if (!file) {
+      return { success: false, errorType: 'UNSUPPORTED_FILE', message: 'Please upload a PDF or supported image.' };
+    }
+
+    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/') || /\.(png|jpe?g)$/i.test(file.name);
+
+    if (!isPdf && !isImage) {
+      return { success: false, errorType: 'UNSUPPORTED_FILE', message: 'Please upload a PDF or supported image.' };
+    }
+
+    // PDF Extraction via PDF.js
+    if (isPdf) {
+      try {
+        if (!window.pdfjsLib) {
+          throw new Error('PDF.js library is not available');
+        }
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const buffer = await file.arrayBuffer();
+        const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+
+        let extractedText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(' ');
+          extractedText += `\n--- Page ${i} ---\n` + pageText;
+        }
+
+        if (!extractedText || extractedText.trim().length < 20) {
+          return {
+            success: false,
+            errorType: 'EMPTY_OR_UNREADABLE',
+            message: "We couldn't extract readable information from this document."
+          };
+        }
+
+        return { success: true, text: extractedText.trim(), format: 'pdf' };
+      } catch (err) {
+        console.error('PDF text extraction error:', err);
+        return {
+          success: false,
+          errorType: 'EMPTY_OR_UNREADABLE',
+          message: "We couldn't extract readable information from this document."
+        };
+      }
+    }
+
+    // Image OCR via Tesseract.js
+    if (isImage) {
+      try {
+        if (!window.Tesseract) {
+          return {
+            success: false,
+            errorType: 'EMPTY_OR_UNREADABLE',
+            message: "We couldn't extract readable information from this document."
+          };
+        }
+
+        const res = await window.Tesseract.recognize(file, 'eng');
+        const text = res?.data?.text;
+        if (!text || text.trim().length < 15) {
+          return {
+            success: false,
+            errorType: 'EMPTY_OR_UNREADABLE',
+            message: "We couldn't extract readable information from this document."
+          };
+        }
+
+        return { success: true, text: text.trim(), format: 'image' };
+      } catch (err) {
+        console.error('Image OCR error:', err);
+        return {
+          success: false,
+          errorType: 'EMPTY_OR_UNREADABLE',
+          message: "We couldn't extract readable information from this document."
+        };
+      }
+    }
+
+    return { success: false, errorType: 'UNSUPPORTED_FILE', message: 'Please upload a PDF or supported image.' };
+  }
+
+  function setModalStep(stepEl, stateClass, iconText) {
+    if (!stepEl) return;
+    stepEl.className = `ai-step-row ${stateClass}`;
+    const icon = stepEl.querySelector('.step-icon');
+    if (icon) icon.innerText = iconText;
+  }
+
+  function showModalError(title, message, canUseDemo = true) {
+    const errorBox = document.getElementById('ai-modal-error-box');
+    const errTitle = document.getElementById('ai-modal-error-title');
+    const errText = document.getElementById('ai-modal-error-message');
+    const demoBtn = document.getElementById('btn-modal-demo-fallback');
+    const pulseIcon = document.getElementById('ai-pulse-icon');
+
+    if (errorBox) errorBox.style.display = 'block';
+    if (errTitle) errTitle.innerText = title;
+    if (errText) errText.innerText = message;
+    if (demoBtn) demoBtn.style.display = canUseDemo ? 'inline-flex' : 'none';
+    if (pulseIcon) pulseIcon.innerText = '⚠️';
+
     const modalTitle = document.getElementById('ai-modal-status-title');
+    if (modalTitle) modalTitle.innerText = 'Processing Stopped';
+  }
+
+  window.closeAiProcessingModal = function() {
+    const modal = document.getElementById('ai-processing-modal');
+    if (modal) modal.classList.remove('open');
+    const pulseIcon = document.getElementById('ai-pulse-icon');
+    if (pulseIcon) pulseIcon.innerText = '🐾';
+  };
+
+  // STEP 3 & 4 — SERVER-SIDE AI PROCESSING WORKFLOW
+  window.processSelectedReport = async function(forceDemo = false) {
+    let target = state.selectedReportFile;
+    if (!target) {
+      selectSampleReport();
+      target = state.selectedReportFile;
+    }
+
+    const modal = document.getElementById('ai-processing-modal');
+    const modalTitle = document.getElementById('ai-modal-status-title');
+    const statusDesc = document.getElementById('ai-modal-status-desc');
     const progressFill = document.getElementById('ai-progress-bar-fill');
     const step1 = document.getElementById('ai-step-1');
     const step2 = document.getElementById('ai-step-2');
     const step3 = document.getElementById('ai-step-3');
+    const errorBox = document.getElementById('ai-modal-error-box');
+    const pulseIcon = document.getElementById('ai-pulse-icon');
 
-    if (procModal) procModal.classList.add('open');
-    if (progressFill) progressFill.style.width = '15%';
-    if (modalTitle) modalTitle.innerText = 'Uploading...';
+    if (errorBox) errorBox.style.display = 'none';
+    if (pulseIcon) pulseIcon.innerText = '🐾';
+    if (modal) modal.classList.add('open');
+    if (modalTitle) modalTitle.innerText = 'Extracting document text...';
+    if (statusDesc) statusDesc.innerText = `Processing ${target.name || 'report'}...`;
+    if (progressFill) progressFill.style.width = '20%';
 
-    // Step 1
-    if (step1) {
-      step1.className = 'ai-step-row completed';
-      step1.querySelector('.step-icon').innerText = '✓';
+    setModalStep(step1, 'running', '⏳');
+    setModalStep(step2, 'pending', '⏳');
+    setModalStep(step3, 'pending', '⏳');
+
+    // Phase 1: Text extraction
+    const extractionResult = await extractDocumentText(target);
+    if (!extractionResult.success) {
+      showModalError(
+        extractionResult.errorType === 'UNSUPPORTED_FILE' ? 'Unsupported File' : 'Unreadable Document',
+        extractionResult.message,
+        true
+      );
+      return;
     }
-    if (step2) {
-      step2.className = 'ai-step-row pending';
-      step2.querySelector('.step-icon').innerText = '⏳';
+
+    setModalStep(step1, 'completed', '✓');
+    if (progressFill) progressFill.style.width = '60%';
+    if (modalTitle) modalTitle.innerText = 'Communicating with serverless AI...';
+
+    // Phase 2: Server-side AI call
+    setModalStep(step2, 'running', '⏳');
+
+    let apiResponse = null;
+    try {
+      const resp = await fetch('/api/analyze-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: extractionResult.text,
+          fileName: target.name || 'medical_report.pdf',
+          isDemo: forceDemo || Boolean(target.isSample)
+        })
+      });
+
+      apiResponse = await resp.json();
+    } catch (netErr) {
+      console.warn('API fetch encountered error:', netErr);
+      // Fallback response when backend is unreachable
+      apiResponse = {
+        success: false,
+        error: 'SERVICE_UNAVAILABLE',
+        message: "We couldn't process this report right now. Please try again.",
+        canUseDemo: true
+      };
     }
-    if (step3) {
-      step3.className = 'ai-step-row pending';
-      step3.querySelector('.step-icon').innerText = '⏳';
+
+    if (!apiResponse || !apiResponse.success) {
+      setModalStep(step2, 'pending', '❌');
+      showModalError(
+        'Processing Issue',
+        apiResponse?.message || "We couldn't process this report right now. Please try again.",
+        true
+      );
+      return;
     }
 
-    // Step 2 progression: PAWS AI is organising the report
-    setTimeout(() => {
-      if (modalTitle) modalTitle.innerText = 'PAWS AI is organising the report...';
-      if (progressFill) progressFill.style.width = '60%';
-      if (step2) {
-        step2.className = 'ai-step-row completed';
-        step2.querySelector('.step-icon').innerText = '✓';
-      }
-    }, 550);
+    // Phase 3: Structure and normalize
+    setModalStep(step2, 'completed', '✓');
+    setModalStep(step3, 'running', '⏳');
+    if (progressFill) progressFill.style.width = '90%';
+    if (modalTitle) modalTitle.innerText = 'Structuring insights...';
 
-    // Step 3 progression: Report processed
     setTimeout(() => {
-      if (modalTitle) modalTitle.innerText = 'Report processed ✓';
-      if (progressFill) progressFill.style.width = '95%';
-      if (step3) {
-        step3.className = 'ai-step-row completed';
-        step3.querySelector('.step-icon').innerText = '✓';
-      }
-    }, 1150);
-
-    // Completion -> Transition smoothly to Screen 04
-    setTimeout(() => {
+      setModalStep(step3, 'completed', '✓');
       if (progressFill) progressFill.style.width = '100%';
+      if (modalTitle) modalTitle.innerText = 'Report organised ✓';
+
       setTimeout(() => {
-        if (procModal) procModal.classList.remove('open');
+        if (modal) modal.classList.remove('open');
+        renderScreen04(apiResponse);
         navigateToScreen('screen-04');
-        showToast('✓ Report processed: 14 details extracted, 1 medication detected, 1 follow-up reminder.');
-      }, 350);
-    }, 1600);
+        const count = apiResponse.data?.measurements?.length || 0;
+        const meds = apiResponse.data?.medications?.length || 0;
+        showToast(`✓ Report processed: ${count} biomarkers & ${meds} medication(s) extracted.`);
+      }, 400);
+    }, 450);
   };
 
-  window.handleCustomReportSelect = function(event) {
-    const file = event?.target?.files?.[0];
-    if (file) {
-      showToast(`📄 Selected file: ${file.name}`);
-      triggerReportUpload(file.name);
+  // STEP 6 — DYNAMIC AI RESULTS UI (Screen 04)
+  function renderScreen04(apiResult) {
+    const data = apiResult.data || {};
+    const isDemo = Boolean(apiResult.isDemo);
+
+    state.currentExtractedReport = {
+      ...data,
+      fileName: apiResult.fileName || state.selectedReportFile?.name || 'Bruno_Blood_Report.pdf',
+      isDemo: isDemo,
+      provider: apiResult.provider,
+      model: apiResult.model
+    };
+
+    // Subheading
+    const subhead = document.getElementById('screen04-subheading');
+    if (subhead) {
+      const dateStr = data.report_date || '28 Aug 2026';
+      const facility = data.vet_facility ? ` • ${data.vet_facility}` : '';
+      subhead.innerText = `${state.currentExtractedReport.fileName} • ${dateStr}${facility} • Organised by PAWS AI`;
     }
-  };
+
+    // Verification Mode Banner
+    const banner = document.getElementById('screen04-source-banner');
+    if (banner) {
+      banner.style.display = 'flex';
+      if (isDemo) {
+        banner.className = 'summary-mode-banner demo-mode';
+        banner.innerHTML = `
+          <span style="font-size: 20px;">ℹ️</span>
+          <div>
+            <strong>Verified Sample Report (Demo Mode):</strong> Extracted from <code>Bruno_Blood_Report.pdf</code>. Connect a server-side AI API key (<code>GEMINI_API_KEY</code> or <code>OPENAI_API_KEY</code>) to process arbitrary documents with live AI models.
+          </div>
+        `;
+      } else {
+        banner.className = 'summary-mode-banner genuine-ai';
+        banner.innerHTML = `
+          <span style="font-size: 20px;">✨</span>
+          <div>
+            <strong>Genuine AI Analysis:</strong> Successfully processed via server-side <strong>${apiResult.provider || 'AI'}</strong> (${apiResult.model || 'model'}). All medical values were structured without human intervention. Zero API keys exposed to browser.
+          </div>
+        `;
+      }
+    }
+
+    // Badges Wrap
+    const measurements = Array.isArray(data.measurements) ? data.measurements : [];
+    const medications = Array.isArray(data.medications) ? data.medications : [];
+    const hasFollowUp = Boolean(data.follow_up || data.follow_up_date);
+
+    const bMeas = document.getElementById('badge-measurements-count');
+    const bMed = document.getElementById('badge-medications-count');
+    const bRem = document.getElementById('badge-reminders-count');
+
+    if (bMeas) bMeas.innerText = `${measurements.length} details extracted`;
+    if (bMed) {
+      bMed.innerText = `${medications.length} medication${medications.length === 1 ? '' : 's'} detected`;
+      bMed.style.display = medications.length > 0 ? 'inline-block' : 'none';
+    }
+    if (bRem) {
+      bRem.innerText = hasFollowUp ? '1 follow-up reminder' : 'No follow-up required';
+      bRem.style.display = hasFollowUp ? 'inline-block' : 'none';
+    }
+
+    // Dynamic Stacked Insights Cards
+    const stack = document.getElementById('screen04-cards-stack');
+    if (!stack) return;
+
+    let cardsHtml = '';
+
+    // Card 1: Animal & Report Metadata (if present)
+    if (data.animal?.name || data.report_date || data.vet_facility) {
+      cardsHtml += `
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Patient & Facility Information</div>
+          <div class="summary-card-main">${data.animal?.name || 'Bruno'} ${data.animal?.species ? `(${data.animal.species})` : ''}</div>
+          <div class="summary-card-sub">
+            Report Date: <strong>${data.report_date || '28 Aug 2026'}</strong>
+            ${data.vet_facility ? ` • Clinic / Attending: <strong>${data.vet_facility}</strong>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Card 2: Key Information & Measurements Table
+    if (measurements.length > 0) {
+      const topItems = measurements.slice(0, 2).map(m => `${m.name}: ${m.value}`).join(' • ');
+      cardsHtml += `
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Key Information & Lab Values</div>
+          <div class="summary-card-main">${topItems || `${measurements.length} Biomarkers Measured`}</div>
+          <div class="summary-card-sub">Extracted explicitly from the uploaded document</div>
+
+          <button class="panel-expand-btn" id="btn-expand-labs" onclick="toggleLabPanel()">
+            Show full lab panel (${measurements.length} values) ▾
+          </button>
+
+          <table class="lab-breakdown-table" id="full-lab-table">
+            <thead>
+              <tr>
+                <th>Biomarker</th>
+                <th>Measured Value</th>
+                <th>Canine Reference Range</th>
+                <th>Interpretation Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${measurements.map(m => {
+                const statusStr = String(m.status || 'Reported');
+                const isFlagged = /elevation|elevated|borderline|high|low|abnormal/i.test(statusStr);
+                const statusClass = isFlagged ? 'lab-status-flag' : 'lab-status-normal';
+                return `
+                  <tr>
+                    <td><strong>${m.name}</strong></td>
+                    <td>${m.value || '—'}</td>
+                    <td>${m.reference_range || '—'}</td>
+                    <td><span class="${statusClass}">${statusStr}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // Card 3: Medications
+    if (medications.length > 0) {
+      cardsHtml += `
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Medications Detected</div>
+          ${medications.map(med => `
+            <div style="margin-bottom: 8px;">
+              <div class="summary-card-main" style="font-size: 16px;">${med.name} ${med.frequency ? `· ${med.frequency}` : ''}</div>
+              <div class="summary-card-sub">${med.instructions || med.dosage || 'Dosage as directed by prescribing veterinarian.'}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Card 4: Conditions Mentioned (if any)
+    const conditions = Array.isArray(data.conditions_mentioned) ? data.conditions_mentioned : [];
+    if (conditions.length > 0) {
+      cardsHtml += `
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Conditions or Diagnoses Mentioned</div>
+          <div class="summary-card-main">${conditions.join(' • ')}</div>
+          <div class="summary-card-sub">Explicitly present in the document. PAWS AI does not diagnose or infer missing conditions.</div>
+        </div>
+      `;
+    }
+
+    // Card 5: Follow-Up & Vaccination Cues
+    const vaccinations = Array.isArray(data.vaccinations) ? data.vaccinations : [];
+    if (hasFollowUp || vaccinations.length > 0) {
+      const followUpText = data.follow_up || (data.follow_up_date ? `Follow-up check-in scheduled for ${data.follow_up_date}` : 'Follow-up noted in report.');
+      const vacText = vaccinations.length > 0 ? ` • Vaccination cue: ${vaccinations.map(v => `${v.name} (${v.status || v.due_date || 'noted'})`).join(', ')}` : '';
+      cardsHtml += `
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Follow-Up & Reminders</div>
+          <div class="summary-card-main">${followUpText}</div>
+          <div class="summary-card-sub">
+            ${data.follow_up_date ? `Explicit date: <strong>${data.follow_up_date}</strong>. ` : ''}
+            ${vacText}
+            AI helps organise information and does not provide medical advice.
+          </div>
+        </div>
+      `;
+    }
+
+    stack.innerHTML = cardsHtml;
+  }
 
   window.toggleLabPanel = function() {
     const table = document.getElementById('full-lab-table');
@@ -880,80 +1488,154 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (table.classList.contains('open')) {
       table.classList.remove('open');
-      btn.innerText = 'Show full lab panel (14 values) ▾';
+      btn.innerText = `Show full lab panel (${state.currentExtractedReport?.measurements?.length || 14} values) ▾`;
     } else {
       table.classList.add('open');
       btn.innerText = 'Hide full lab panel ▴';
     }
   };
 
-  // Step 5: Add to Care Passport -> Updates Timeline, Reports list, & Generates Reminders
+  // STEP 7 & 8 — ADD TO CARE PASSPORT (Updates Timeline, Reports, Medications & Reminders)
   window.addExtractedReportToPassport = function() {
+    const report = state.currentExtractedReport;
+    if (!report) {
+      showToast('⚠️ No active report to save.');
+      return;
+    }
+
     const addBtn = document.getElementById('btn-add-to-passport');
     if (addBtn) {
-      addBtn.innerText = 'Saving to Passport...';
+      addBtn.innerText = 'Saving to Care Passport...';
       addBtn.disabled = true;
     }
 
     setTimeout(() => {
-      // 1. Add new entry into Bruno's timeline
+      const dateString = report.report_date || '28 Aug 2026';
+      const measCount = report.measurements?.length || 0;
+      const medCount = report.medications?.length || 0;
+
+      // 1. Reports Tab: Prepend report
+      const newReportEntry = {
+        id: `rep-${Date.now()}`,
+        fileName: report.fileName || 'Bruno_Blood_Report.pdf',
+        date: dateString,
+        statusText: (report.isDemo ? 'Demo Mode • ' : 'Organised by PAWS AI • ') + `${measCount} details extracted • Just now`,
+        isNew: true
+      };
+      state.passport.reports.unshift(newReportEntry);
+
+      // 2. Health Timeline: Prepend timeline event using the report date
+      let timelineDesc = `AI extracted ${measCount} lab values`;
+      if (medCount > 0) {
+        timelineDesc += ` • ${report.medications[0].name} noted`;
+      }
+      if (report.follow_up_date) {
+        timelineDesc += ` • Follow-up scheduled ${report.follow_up_date}`;
+      } else if (report.follow_up) {
+        timelineDesc += ` • Follow-up noted`;
+      }
+
       const newTimelineEvent = {
         id: `tl-${Date.now()}`,
-        date: 'Aug 28 (Just now)',
-        title: 'Blood report uploaded',
-        desc: 'AI extracted 14 biomarkers • Cetirizine noted • Added follow-up reminder',
+        date: dateString,
+        title: 'Medical report added',
+        desc: timelineDesc,
         isNew: true
       };
       state.passport.timeline.unshift(newTimelineEvent);
 
-      // 2. Prepend report to Reports Tab
-      const reportsContainer = document.getElementById('reports-list-container');
-      if (reportsContainer) {
-        const newReportBox = document.createElement('div');
-        newReportBox.className = 'uploaded-report-box';
-        newReportBox.style.border = '2px solid var(--primary-forest)';
-        newReportBox.style.background = '#F2F8F4';
-        newReportBox.onclick = () => triggerReportUpload('blood_report_august.pdf');
-        newReportBox.innerHTML = `
-          <div class="report-file-name">
-            <span style="font-weight: 750; color: var(--primary-forest);">blood_report_aug28_verified.pdf</span>
-            <span style="font-size: 14px;">📄 ✨</span>
-          </div>
-          <div class="report-file-status" style="color: var(--primary-forest); font-weight: 600;">Organised by PAWS AI • 14 details extracted • Just now</div>
-        `;
-        reportsContainer.prepend(newReportBox);
+      // 3. Medications Tab: Add medications explicitly identified in the report
+      if (Array.isArray(report.medications) && report.medications.length > 0) {
+        report.medications.forEach(m => {
+          const exists = state.passport.medications.find(med => med.name.toLowerCase() === m.name.toLowerCase());
+          if (!exists) {
+            state.passport.medications.unshift({
+              id: `med-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+              name: m.name,
+              dosage: m.dosage || m.frequency || '1 tablet once daily',
+              frequency: m.frequency || 'Daily',
+              status: 'Active',
+              instructions: m.instructions || '',
+              indication: `Prescribed in uploaded report (${report.fileName})`,
+              dateAdded: dateString,
+              isNew: true
+            });
+          }
+        });
       }
 
-      // 3. Update Attention Reminders
-      const countText = document.getElementById('attention-count-text');
-      const pillsContainer = document.getElementById('attention-pills-container');
-      if (countText) countText.innerText = '2 things need your attention';
-      if (pillsContainer) {
-        pillsContainer.innerHTML = `
-          <span class="attention-pill-item">Rabies vaccination due in 20 days</span>
-          <span class="attention-pill-item" style="background: #E2ECE5; border: 1.5px solid var(--primary-forest); color: var(--primary-forest); font-weight: 750;">Follow-up mentioned in latest report</span>
-        `;
+      // 4. Reminders / Attention Strip:
+      // Only create reminder when an explicit follow-up/vaccination date or instruction exists.
+      if (report.follow_up_date || report.follow_up) {
+        const reminderText = report.follow_up_date
+          ? `Follow-up check-in: ${report.follow_up_date} (${report.follow_up || 'Consultation'})`
+          : `Follow-up mentioned in latest report: ${report.follow_up}`;
+
+        // Remove old follow-up to update with latest
+        state.passport.reminders = state.passport.reminders.filter(r => r.type !== 'follow_up');
+        state.passport.reminders.push({
+          id: `rem-${Date.now()}`,
+          text: reminderText,
+          type: 'follow_up',
+          date: report.follow_up_date || null,
+          isNew: true
+        });
       }
+
+      if (Array.isArray(report.vaccinations)) {
+        report.vaccinations.forEach(v => {
+          if (v.due_date || v.status) {
+            state.passport.reminders.push({
+              id: `rem-v-${Date.now()}`,
+              text: `${v.name}: ${v.due_date ? `Due ${v.due_date}` : v.status}`,
+              type: 'vaccine',
+              isNew: true
+            });
+          }
+        });
+      }
+
+      // 5. Persist to LocalStorage
+      savePassportState();
+
+      // 6. Re-render Care Passport components
+      renderBrunoTimeline();
+      renderBrunoMedications();
+      renderBrunoReports();
+      renderBrunoAttention();
 
       if (addBtn) {
-        addBtn.innerText = '✓ Added to Passport!';
+        addBtn.innerText = '✓ Added to Care Passport!';
       }
 
-      showToast('✓ Added to Bruno’s Care Passport! Health timeline, reports & reminders updated.');
+      showToast(`✓ Added to Bruno’s Care Passport! Health timeline, reports & medications updated.`);
 
-      // 4. Switch smoothly to Screen 03 Care Passport
+      // 7. Transition smoothly to Screen 03 (Care Passport)
       setTimeout(() => {
         navigateToScreen('screen-03');
         switchPassportTab('health');
-        renderBrunoTimeline();
 
-        // Reset button text
         if (addBtn) {
           addBtn.innerText = 'Add to Care Passport';
           addBtn.disabled = false;
         }
       }, 500);
-    }, 400);
+
+    }, 350);
+  };
+
+  // Backward compatibility alias for any existing triggers
+  window.triggerReportUpload = function(fileName = 'blood_report_august.pdf') {
+    if (fileName.includes('prescription')) {
+      state.selectedReportFile = {
+        isSample: true,
+        name: 'dermatology_prescription.pdf',
+        textPath: 'sample_reports/Bruno_Blood_Report.txt'
+      };
+    } else {
+      selectSampleReport();
+    }
+    processSelectedReport();
   };
 
   // ==========================================================================
@@ -1197,8 +1879,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3800);
   };
 
-  // Initial render of timeline
+  // Initial load & render of living Care Passport data (Step 7 & 8)
+  loadPassportState();
   renderBrunoTimeline();
+  renderBrunoMedications();
+  renderBrunoReports();
+  renderBrunoAttention();
+  selectSampleReport();
 
   // Initialize Screen
   navigateToScreen('screen-01');

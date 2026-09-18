@@ -1,0 +1,18 @@
+{
+  "name": "paws",
+  "version": "1.0.0",
+  "description": "PAWS - Animal Care Companion & Living Care Passport with AI Medical Report Organiser",
+  "main": "dev-server.js",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node dev-server.js"
+  },
+  "keywords": [
+    "veterinary",
+    "care-passport",
+    "animal-health",
+    "ai-medical-reports"
+  ],
+  "author": "Ismayra",
+  "license": "MIT"
+}

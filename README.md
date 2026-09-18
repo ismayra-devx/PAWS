@@ -18,20 +18,28 @@ PAWS is designed for both **Pet Parents** (managing companion animals like Bruno
 
 PAWS is intentionally engineered using modern web standards (**HTML5, CSS3 Custom Properties, Vanilla ES6+ JavaScript**) with **zero build steps** and **zero npm dependencies**. It runs cleanly on any local static server:
 
-### Option A: Python Built-in Server (Recommended)
+### Option A: Local Dev Server with Serverless AI (Recommended)
 ```bash
-# From the project root directory:
-python -m http.server 8000
+# Starts the zero-dependency Node.js server with /api/analyze-report route:
+npm start
+# or: node dev-server.js
 ```
-Then visit: [`http://localhost:8000/`](http://localhost:8000/)
+Then visit: [`http://localhost:3000/`](http://localhost:3000/)
 
-### Option B: Node.js `npx serve`
+> **Optional AI API Key**: To test arbitrary custom documents with live AI models (Gemini or OpenAI), set:
+> ```bash
+> export GEMINI_API_KEY="your-gemini-api-key"
+> # or in a local .env file (automatically ignored by git)
+> ```
+> If no API key is provided, PAWS seamlessly provides a **verified Demo Mode** using the included veterinary sample report (`sample_reports/Bruno_Blood_Report.pdf`).
+
+### Option B: Python Built-in Server
 ```bash
-npx serve .
+python -m http.server 8000
 ```
 
 ### Option C: Direct Browser Launch
-Simply double-click `index.html` or open it directly in Chrome, Edge, Firefox, or Safari.
+Open `index.html` directly in Chrome, Edge, Firefox, or Safari.
 
 ---
 
@@ -39,12 +47,19 @@ Simply double-click `index.html` or open it directly in Chrome, Edge, Firefox, o
 
 ```
 PAWS/
+├── api/
+│   └── analyze-report.js    # Vercel serverless function (Gemini & OpenAI integration)
+├── sample_reports/
+│   ├── Bruno_Blood_Report.pdf # Verified sample veterinary hematology report
+│   └── Bruno_Blood_Report.txt # Plain text representation of sample report
+├── dev-server.js            # Zero-dependency local runner for static frontend & serverless API
 ├── index.html               # Semantic HTML5 single-page application structure & modals
 ├── styles.css               # Calm healthcare design system (CSS variables, responsive layouts)
 ├── app.js                   # Reactive client state, AI extraction pipeline & UI handlers
-├── README.md                # Comprehensive project documentation & developer onboarding
-├── submission_document.md   # Product & engineering design rationale
-└── .gitignore               # Standard repository exclusions
+├── vercel.json              # Vercel deployment configuration
+├── package.json             # Minimal scripts configuration
+├── README.md                # Project documentation
+└── .gitignore               # Ignored logs, caches & credentials (.env)
 ```
 
 ---
