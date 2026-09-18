@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAWS — Animal Care Companion | Practo for Animals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+
+  <!-- Global Application Header -->
+  <header class="paws-header">
+    <div class="brand-wrap" onclick="navigateToScreen('screen-01')">
+      <span class="brand-logo">PAWS</span>
+      <span class="brand-tagline">Animal care, simplified.</span>
+    </div>
+
+    <!-- Centered Clean Navigation -->
+    <nav class="nav-links">
+      <button id="nav-home" class="nav-link active">Home</button>
+      <button id="nav-find-care" class="nav-link">Find care</button>
+      <button id="nav-my-animals" class="nav-link">My animals</button>
+      <button id="nav-health-records" class="nav-link">Health records</button>
+    </nav>
+
+    <!-- Header Right: User Profile & Quick Mode -->
+    <div class="nav-right">
+      <button class="header-rescue-pill" id="header-rescue-badge" onclick="toggleRescueMode()">
+        <span>🆘</span> Rescue Mode
+      </button>
+
+      <div class="profile-menu-container">
+        <button class="btn-profile-toggle" id="btn-profile-toggle" onclick="toggleProfileDropdown()">
+          <span class="profile-avatar-circle" id="header-avatar-circle">IS</span>
+          <span id="header-profile-label">Ismayra ▾</span>
+        </button>
+
+        <!-- Professional Dropdown Menu -->
+        <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+          <!-- User Header Banner -->
+          <div class="dropdown-user-header">
+            <div class="dropdown-user-avatar" id="dropdown-user-avatar">IS</div>
+            <div class="dropdown-user-meta">
+              <div class="dropdown-user-name" id="dropdown-user-name">Ismayra</div>
+              <div class="dropdown-user-email" id="dropdown-user-email">ismayra@paws.care</div>
+              <span class="profile-role-pill" id="profile-role-pill">Pet Parent</span>
+            </div>
+          </div>
+
+          <!-- Active Companion Card -->
+          <div class="dropdown-section-title">Companion in Focus</div>
+          <div class="dropdown-companion-card" onclick="navigateToScreen('screen-03'); toggleProfileDropdown();">
+            <div class="companion-card-avatar" id="dropdown-companion-avatar">🐕</div>
+            <div class="companion-card-info">
+              <div class="companion-card-name" id="dropdown-companion-name">Bruno</div>
+              <div class="companion-card-breed" id="dropdown-companion-meta">Golden Retriever • 4 yrs</div>
+            </div>
+            <span class="companion-active-tag" id="dropdown-companion-tag">● Active</span>
+          </div>
+
+          <!-- Quick Navigation Actions -->
+          <div class="dropdown-section-title">Care & Actions</div>
+          <div class="dropdown-items-group">
+            <button class="dropdown-item" onclick="toggleRescueMode(); toggleProfileDropdown();">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-icon">🆘</span>
+                <span id="dropdown-rescue-text">Switch to Rescue Mode</span>
+              </div>
+              <span class="dropdown-item-badge">Stray triage</span>
+            </button>
+            <button class="dropdown-item" onclick="openEmergencyTriageFlow(); toggleProfileDropdown();">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-icon">🚨</span>
+                <span>Emergency 24×7 Care</span>
+              </div>
+              <span class="dropdown-item-badge urgent">Urgent</span>
+            </button>
+            <button class="dropdown-item" onclick="showToast('⭐ 5 clinics saved in your offline Care Passport.'); toggleProfileDropdown();">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-icon">⭐</span>
+                <span>Saved Providers</span>
+              </div>
+              <span class="dropdown-item-badge subtle">5 clinics</span>
+            </button>
+            <button class="dropdown-item" onclick="openSignInModal(); toggleProfileDropdown();">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-icon">👤</span>
+                <span>Switch User / Settings</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Sign Out Footer -->
+          <div class="dropdown-footer">
+            <button class="btn-dropdown-signout" onclick="handleSignOutAction()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span>Sign Out of Profile</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="main-viewport">
+
+    <!-- ====================================================================
+         SCREEN 01 — HOME (Serene, Spacious, Uncluttered)
+         ==================================================================== -->
+    <section id="screen-01" class="screen-pane active">
+      <div class="home-hero-wrap">
+        <div class="home-hero-badge">🐾 Animal Care Companion</div>
+        <h1 class="home-headline">Good care starts with<br>knowing what they need.</h1>
+        <p class="home-tagline-sub">A living Care Passport for every animal, combined with immediate access to trusted clinics, 24×7 emergency hospitals, and AI-organised health records.</p>
+      </div>
+
+      <!-- Primary Quick Actions Row -->
+      <div class="home-quick-actions-row">
+        <button class="btn-primary-action" onclick="navigateToScreen('screen-02')">
+          <span>🔍</span> Find Care
+        </button>
+        <button class="btn-secondary-action" onclick="navigateToScreen('screen-03')">
+          <span>🐾</span> My Animal
+        </button>
+        <button class="btn-emergency-action" onclick="openEmergencyTriageFlow()">
+          <span>🚨</span> Emergency
+        </button>
+        <button class="btn-rescue-action" onclick="activateRescueModeJourney()">
+          <span>🆘</span> I’m helping a rescued animal
+        </button>
+      </div>
+
+      <!-- Search Bar with Location -->
+      <div class="home-search-bar">
+        <span style="font-size: 18px; margin-right: 12px; color: #8C9991;">🔍</span>
+        <input type="text" class="home-search-input" placeholder="Search vets, clinics, ambulances, boarding, grooming..." onkeydown="if(event.key==='Enter') openCareDiscovery('all')">
+        <button id="btn-use-location" class="btn-location-pill" onclick="useUserLocation()">Use my location</button>
+      </div>
+
+      <!-- 6-Category Grid -->
+      <div class="category-grid">
+        <!-- 01 Vet & Clinic -->
+        <div class="category-card" onclick="openCareDiscovery('vet')">
+          <div class="cat-icon-badge">V</div>
+          <div class="cat-details">
+            <h3>Vet & clinic</h3>
+            <p>General health & diagnostics</p>
+          </div>
+        </div>
+
+        <!-- 02 Emergency -->
+        <div class="category-card" onclick="openEmergencyTriageFlow()">
+          <div class="cat-icon-badge emergency">!</div>
+          <div class="cat-details">
+            <h3>Emergency</h3>
+            <p>24×7 trauma & critical care</p>
+          </div>
+        </div>
+
+        <!-- 03 Ambulance -->
+        <div class="category-card" onclick="openCareDiscovery('ambulance')">
+          <div class="cat-icon-badge">🚑</div>
+          <div class="cat-details">
+            <h3>Ambulance</h3>
+            <p>Urgent pet transport & ICU</p>
+          </div>
+        </div>
+
+        <!-- 04 Boarding -->
+        <div class="category-card" onclick="openCareDiscovery('boarding')">
+          <div class="cat-icon-badge">B</div>
+          <div class="cat-details">
+            <h3>Boarding</h3>
+            <p>Safe stays & overnight care</p>
+          </div>
+        </div>
+
+        <!-- 05 Grooming -->
+        <div class="category-card" onclick="openCareDiscovery('grooming')">
+          <div class="cat-icon-badge">✂️</div>
+          <div class="cat-details">
+            <h3>Grooming</h3>
+            <p>Hygiene, skin & coat care</p>
+          </div>
+        </div>
+
+        <!-- 06 Vaccination -->
+        <div class="category-card" onclick="navigateToScreen('screen-03'); switchPassportTab('tab-vaccines');">
+          <div class="cat-icon-badge">💉</div>
+          <div class="cat-details">
+            <h3>Vaccination</h3>
+            <p>Booster schedule & passports</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean Action Banner -->
+      <div class="home-banner-card">
+        <div class="home-banner-content">
+          <h2>Need help with a report?</h2>
+          <p>Upload a medical report and let PAWS turn it into a simple, non-jargon health timeline.</p>
+        </div>
+        <div class="banner-actions-group">
+          <button class="btn-banner-rescue-subtle" onclick="activateRescueModeJourney()">
+            🆘 Rescue Mode
+          </button>
+          <button class="btn-banner-action" onclick="navigateToScreen('screen-03')">
+            Open Care Passport
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SCREEN 02 — CARE DISCOVERY
+         ==================================================================== -->
+    <section id="screen-02" class="screen-pane">
+      
+      <!-- Contextual Emergency Banner (Reveals when Emergency filter is active) -->
+      <div class="emergency-banner-alert" id="emergency-dispatch-banner">
+        <div>
+          <div class="emergency-alert-title">
+            <span>🚨</span> Emergency Care Near Sector Alpha II
+          </div>
+          <div class="emergency-alert-sub">
+            Surfacing verified 24×7 trauma hospitals and standby ambulances with surgical readiness.
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-card-call emergency-call" style="background: white; color: var(--emergency-dark); padding: 10px 20px; font-weight: 800;" onclick="callProviderAction('provider-petcare')">
+            📞 Call ER Hotline
+          </button>
+          <button class="btn-card-call emergency-call" style="border: 1.5px solid white; padding: 10px 20px; font-weight: 800;" onclick="requestPetAmbulance()">
+            🚑 Request Ambulance
+          </button>
+        </div>
+      </div>
+
+      <!-- Title Group -->
+      <div class="screen-title-group">
+        <h1 class="screen-heading">Care near you</h1>
+        <p class="screen-subheading">Showing trusted options around Greater Noida</p>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="filter-pills-row">
+        <button class="filter-pill active" data-filter="all" onclick="applyFilter('all')">All care</button>
+        <button class="filter-pill" data-filter="open" onclick="applyFilter('open')">Open now</button>
+        <button class="filter-pill emergency-filter" data-filter="emergency" onclick="applyFilter('emergency')">Emergency</button>
+        <button class="filter-pill" data-filter="ambulance" onclick="applyFilter('ambulance')">Ambulance</button>
+        <button class="filter-pill" data-filter="boarding" onclick="applyFilter('boarding')">Boarding</button>
+        <button class="filter-pill" data-filter="grooming" onclick="applyFilter('grooming')">Grooming</button>
+      </div>
+
+      <!-- Two-Column Discover Layout -->
+      <div class="discover-grid">
+        
+        <!-- Left: Provider Cards List -->
+        <div class="provider-list-section">
+          <h3>
+            <span>Nearby providers</span>
+          </h3>
+
+          <div class="provider-card-list">
+
+            <!-- Provider 1 -->
+            <div class="provider-card selected" id="provider-green-paws" data-type="vet" data-open="true" data-emergency="true" data-ambulance="true" onclick="selectProvider('provider-green-paws')">
+              <div class="provider-header">
+                <div class="provider-left-meta">
+                  <div class="provider-plus-icon">+</div>
+                  <div class="provider-info">
+                    <h4>Green Paws Veterinary Clinic</h4>
+                    <div class="provider-distance-status">1.2 km • Open now</div>
+                    <div class="provider-tag-row">
+                      <span class="provider-tag-pill">Emergency support</span>
+                      <span class="provider-tag-pill ambulance-tag">Ambulance available</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="provider-actions-row">
+                <button class="btn-card-details" onclick="openProviderProfile('provider-green-paws', event)">
+                  View clinic
+                </button>
+                <button class="btn-card-call" onclick="callProviderAction('provider-green-paws', event)">
+                  <span>📞</span> Call
+                </button>
+                <button class="btn-card-directions" onclick="openDirectionsAction('provider-green-paws', event)">
+                  <span>🗺️</span> Directions
+                </button>
+              </div>
+            </div>
+
+            <!-- Provider 2 -->
+            <div class="provider-card" id="provider-petcare" data-type="emergency" data-open="true" data-emergency="true" data-ambulance="true" onclick="selectProvider('provider-petcare')">
+              <div class="provider-header">
+                <div class="provider-left-meta">
+                  <div class="provider-plus-icon emergency">+</div>
+                  <div class="provider-info">
+                    <h4>PetCare 24×7 Emergency Hospital</h4>
+                    <div class="provider-distance-status">2.4 km • Open now (24×7)</div>
+                    <div class="provider-tag-row">
+                      <span class="provider-tag-pill emergency-tag">Emergency • trauma ICU</span>
+                      <span class="provider-tag-pill ambulance-tag">Ambulance standby</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="provider-actions-row">
+                <button class="btn-card-details" onclick="openProviderProfile('provider-petcare', event)">
+                  View clinic
+                </button>
+                <button class="btn-card-call emergency-call" onclick="callProviderAction('provider-petcare', event)">
+                  <span>🚨</span> Call ER
+                </button>
+                <button class="btn-card-directions" onclick="openDirectionsAction('provider-petcare', event)">
+                  <span>🗺️</span> Directions
+                </button>
+              </div>
+            </div>
+
+            <!-- Provider 3 -->
+            <div class="provider-card" id="provider-happy-tails" data-type="boarding" data-open="false" data-emergency="false" data-ambulance="false" onclick="selectProvider('provider-happy-tails')">
+              <div class="provider-header">
+                <div class="provider-left-meta">
+                  <div class="provider-plus-icon">+</div>
+                  <div class="provider-info">
+                    <h4>Happy Tails Boarding & Daycare</h4>
+                    <div class="provider-distance-status">3.1 km • Opens 8 AM</div>
+                    <div class="provider-tag-row">
+                      <span class="provider-tag-pill">Boarding • daycare</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="provider-actions-row">
+                <button class="btn-card-details" onclick="openProviderProfile('provider-happy-tails', event)">
+                  View facility
+                </button>
+                <button class="btn-card-call" onclick="callProviderAction('provider-happy-tails', event)">
+                  <span>📞</span> Call
+                </button>
+                <button class="btn-card-directions" onclick="openDirectionsAction('provider-happy-tails', event)">
+                  <span>🗺️</span> Directions
+                </button>
+              </div>
+            </div>
+
+            <!-- Provider 4: City Paws Mobile Ambulance & NGO -->
+            <div class="provider-card" id="provider-city-paws" data-type="ambulance" data-open="true" data-emergency="true" data-ambulance="true" onclick="selectProvider('provider-city-paws')">
+              <div class="provider-header">
+                <div class="provider-left-meta">
+                  <div class="provider-plus-icon emergency">🚑</div>
+                  <div class="provider-info">
+                    <h4>City Paws Mobile Ambulance & NGO</h4>
+                    <div class="provider-distance-status">1.8 km • Standby 24×7</div>
+                    <div class="provider-tag-row">
+                      <span class="provider-tag-pill emergency-tag">Emergency • ambulance • NGO</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="provider-actions-row">
+                <button class="btn-card-details" onclick="openProviderProfile('provider-city-paws', event)">
+                  View unit
+                </button>
+                <button class="btn-card-call emergency-call" onclick="callProviderAction('provider-city-paws', event)">
+                  <span>🚑</span> Dispatch
+                </button>
+                <button class="btn-card-directions" onclick="openDirectionsAction('provider-city-paws', event)">
+                  <span>🗺️</span> Route
+                </button>
+              </div>
+            </div>
+
+            <!-- Provider 5: Bark & Purr Grooming -->
+            <div class="provider-card" id="provider-bark-purr" data-type="grooming" data-open="true" data-emergency="false" data-ambulance="false" onclick="selectProvider('provider-bark-purr')">
+              <div class="provider-header">
+                <div class="provider-left-meta">
+                  <div class="provider-plus-icon">✂️</div>
+                  <div class="provider-info">
+                    <h4>Bark & Purr Grooming & Spa</h4>
+                    <div class="provider-distance-status">2.0 km • Open now</div>
+                    <div class="provider-tag-row">
+                      <span class="provider-tag-pill">Grooming • hygiene • spa</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="provider-actions-row">
+                <button class="btn-card-details" onclick="openProviderProfile('provider-bark-purr', event)">
+                  View salon
+                </button>
+                <button class="btn-card-call" onclick="callProviderAction('provider-bark-purr', event)">
+                  <span>📞</span> Contact
+                </button>
+                <button class="btn-card-directions" onclick="openDirectionsAction('provider-bark-purr', event)">
+                  <span>🗺️</span> Directions
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Map View -->
+        <div class="map-view-section">
+          <div class="map-container-card">
+            <div class="map-header-title">Map view</div>
+
+            <!-- SVG Vector Map Graphic -->
+            <svg class="map-canvas-background" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="var(--sage-map-canvas)"/>
+              <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+              <path d="M -20 90 Q 140 140 230 60 T 500 180" fill="none" stroke="#C3D6C8" stroke-width="26" stroke-linecap="round" />
+              <path d="M 120 -20 Q 180 180 140 320 T 260 480" fill="none" stroke="#E9EFEA" stroke-width="14" />
+              <path d="M -10 240 Q 220 220 460 310" fill="none" stroke="#E9EFEA" stroke-width="10" />
+            </svg>
+
+            <!-- Map Interactive Pins -->
+            <div class="map-pin pin-v pin-active" id="pin-vet" title="Green Paws Vet Clinic" onclick="onMapPinClick('vet')">V</div>
+            <div class="map-pin pin-emergency-alert pin-emergency" id="pin-emergency" title="PetCare 24×7" onclick="onMapPinClick('emergency')">!</div>
+            <div class="map-pin pin-b" id="pin-boarding" title="Happy Tails Boarding" onclick="onMapPinClick('boarding')">B</div>
+            <div class="map-pin pin-emergency" id="pin-ambulance" title="City Paws Ambulance" onclick="onMapPinClick('ambulance')" style="top: 60%; left: 74%;">🚑</div>
+            <div class="map-pin" id="pin-grooming" title="Bark & Purr Grooming" onclick="onMapPinClick('grooming')" style="top: 76%; left: 34%;">✂️</div>
+
+            <!-- Tip Card at Bottom -->
+            <div class="map-tip-card">
+              <p>Tip: emergency providers are highlighted.</p>
+              <p>Tap a provider to view details and call.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SCREEN 03 — HEALTH PASSPORT
+         ==================================================================== -->
+    <section id="screen-03" class="screen-pane">
+      <div class="screen-title-group">
+        <h1 class="screen-heading" id="passport-title">Bruno’s Care Passport</h1>
+        <p class="screen-subheading">A living Care Passport for every animal, keeping records, vaccines, and medical history in one place.</p>
+      </div>
+
+      <!-- Profile Summary Card -->
+      <div class="passport-profile-card" id="passport-profile-card">
+        <div class="passport-profile-left">
+          <div class="animal-avatar" id="passport-avatar">B</div>
+          <div class="animal-bio">
+            <h3 id="passport-name">Bruno</h3>
+            <p id="passport-meta">Golden Retriever • 4 years • Male</p>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="passport-submeta">
+              Weight: 31.5 kg • Microchip: #98514100234 • Blood Group: DEA 1.1+
+            </div>
+          </div>
+        </div>
+        <div class="passport-profile-right">
+          <span class="vaccine-countdown-badge" id="passport-badge">Next vaccine • 20 days</span>
+          <button class="btn-rescue-toggle" id="btn-rescue-mode" onclick="toggleRescueMode()">
+            Switch to Rescue Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Rescue Mode Rapid Action Hub (Visible when in Rescue Mode) -->
+      <div class="rescue-hub-container" id="rescue-mode-hub" style="display: none;">
+        <div class="rescue-hub-title">
+          <span>🆘</span> Rescuer Emergency Hub — Temporary Stray Triage
+        </div>
+        <div class="rescue-hub-sub">
+          Immediate coordination tools for community animal rescue, foster handoffs, and NGO care:
+        </div>
+        <div class="rescue-actions-row">
+          <button class="btn-rescue-subaction" onclick="openCareDiscovery('emergency')">
+            🏥 Find Emergency Vet
+          </button>
+          <button class="btn-rescue-subaction" onclick="requestPetAmbulance()">
+            🚑 Request Ambulance
+          </button>
+          <button class="btn-rescue-subaction" onclick="openNGOListModal()">
+            🤝 Contact Local NGO
+          </button>
+          <button class="btn-rescue-subaction" onclick="openCareDiscovery('boarding')">
+            🏡 Find Foster/Boarding
+          </button>
+          <button class="btn-rescue-subaction" onclick="openAddTreatmentModal()" style="background: var(--primary-forest); color: white; border-color: var(--primary-forest);">
+            📝 Add Treatment Info
+          </button>
+        </div>
+      </div>
+
+      <!-- Attention Strip -->
+      <div class="passport-attention-card" id="passport-attention-card">
+        <div class="attention-left">
+          <span>⚠️</span> <span id="attention-count-text">2 things need your attention</span>
+        </div>
+        <div class="attention-pills-wrap" id="attention-pills-container">
+          <span class="attention-pill-item" id="att-pill-vaccine">Rabies vaccination due in 20 days</span>
+          <span class="attention-pill-item" id="att-pill-vet">Follow-up check-in scheduled</span>
+        </div>
+      </div>
+
+      <!-- Section Navigation Tabs -->
+      <div class="passport-tabs-nav">
+        <button class="passport-tab-pill active" id="ptab-btn-health" onclick="switchPassportTab('health')">Health & Timeline</button>
+        <button class="passport-tab-pill" id="ptab-btn-vaccines" onclick="switchPassportTab('vaccines')">Vaccines</button>
+        <button class="passport-tab-pill" id="ptab-btn-medications" onclick="switchPassportTab('medications')">Medications</button>
+        <button class="passport-tab-pill" id="ptab-btn-reports" onclick="switchPassportTab('reports')">Reports</button>
+        <button class="passport-tab-pill" id="ptab-btn-visits" onclick="switchPassportTab('visits')">Visits</button>
+      </div>
+
+      <!-- Two-Column Timeline & AI Organiser -->
+      <div class="passport-content-grid">
+        
+        <!-- Left: Dynamic Tab Panels -->
+        <div class="timeline-card">
+          
+          <!-- Pane 1: Health & Timeline (Default) -->
+          <div id="passport-pane-health" class="passport-pane active">
+            <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <span>Health timeline</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Verified Chronological History</span>
+            </h3>
+            <div class="timeline-feed" id="passport-timeline-feed">
+              
+              <!-- Timeline Event 1 -->
+              <div class="timeline-item" id="tl-item-aug28">
+                <div class="timeline-dot"></div>
+                <div class="timeline-meta">
+                  <span class="timeline-date">Aug 28</span>
+                  <div class="timeline-details">
+                    <h4>Blood report uploaded</h4>
+                    <p>AI extracted 14 key values • 2 flagged for discussion</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Timeline Event 2 -->
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-meta">
+                  <span class="timeline-date">Aug 10</span>
+                  <div class="timeline-details">
+                    <h4>Vet visit</h4>
+                    <p>Skin allergy discussed with Dr. Ananya Sen</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Timeline Event 3 -->
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-meta">
+                  <span class="timeline-date">Jul 02</span>
+                  <div class="timeline-details">
+                    <h4>Vaccination</h4>
+                    <p>Rabies vaccine administered • completed</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pane 2: Vaccines -->
+          <div id="passport-pane-vaccines" class="passport-pane" style="display: none;">
+            <h3 style="margin-bottom: 14px;">Vaccination Record</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: #FFF7EB; border: 1.5px solid #F5C77E; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 750; font-size: 14px; color: #8A4F08;">Rabies Booster</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Annual core immunization • Due in 12 days</div>
+                </div>
+                <button class="btn-card-call" style="padding: 6px 14px; font-size: 12px;" onclick="openCareDiscovery('vet')">Schedule</button>
+              </div>
+              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 750; font-size: 14px;">DHPP 9-in-1 (Distemper/Parvo)</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Administered Jul 2025 • Valid till Dec 2026</div>
+                </div>
+                <span class="lab-status-normal">Up to date</span>
+              </div>
+              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 750; font-size: 14px;">Bordetella (Kennel Cough)</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Administered Feb 2026 • Valid till Feb 2027</div>
+                </div>
+                <span class="lab-status-normal">Up to date</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 3: Medications -->
+          <div id="passport-pane-medications" class="passport-pane" style="display: none;">
+            <h3 style="margin-bottom: 14px;">Medications</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: var(--sage-tint); padding: 14px 16px; border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="font-weight: 800; font-size: 15px; color: var(--primary-forest);">Cetirizine (10mg)</span>
+                  <span class="provider-tag-pill" style="background: var(--primary-forest); color: white;">Active</span>
+                </div>
+                <div style="font-size: 13px; font-weight: 600;">Dosage: 1 tablet once daily after meal</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Prescribed by Dr. Sen for environmental skin pruritus/allergy.</div>
+              </div>
+              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 700; font-size: 14px;">Antiseptic Saline Wipe</span>
+                  <span style="font-size: 12px; color: var(--text-muted);">Completed Jul 2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 4: Reports -->
+          <div id="passport-pane-reports" class="passport-pane" style="display: none;">
+            <h3 style="margin-bottom: 14px;">Uploaded Medical Reports</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;" id="reports-list-container">
+              <div class="uploaded-report-box" onclick="triggerReportUpload('blood_report_august.pdf')">
+                <div class="report-file-name">
+                  <span>blood_report_august.pdf</span>
+                  <span style="font-size: 14px;">📄</span>
+                </div>
+                <div class="report-file-status">AI Organised • 14 biomarkers extracted</div>
+              </div>
+              <div class="uploaded-report-box" onclick="triggerReportUpload('dermatology_prescription.pdf')">
+                <div class="report-file-name">
+                  <span>dermatology_prescription.pdf</span>
+                  <span style="font-size: 14px;">📄</span>
+                </div>
+                <div class="report-file-status">Prescription OCR • Cetirizine detected</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 5: Visits -->
+          <div id="passport-pane-visits" class="passport-pane" style="display: none;">
+            <h3 style="margin-bottom: 14px;">Clinical Visits History</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px;">
+                <div style="font-weight: 750; font-size: 14px;">Aug 10 — Green Paws Vet Clinic</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Consulting Doctor: Dr. Ananya Sen • Subject: Skin Allergy Examination</div>
+              </div>
+              <div style="background: var(--bg-card-subtle); padding: 12px 16px; border-radius: 12px;">
+                <div style="font-weight: 750; font-size: 14px;">Jul 02 — Green Paws Vet Clinic</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Annual Physical & Rabies Immunization</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: AI Report Organiser Card -->
+        <div class="ai-organiser-card">
+          <div class="ai-organiser-top">
+            <div class="ai-organiser-tag">AI report organiser</div>
+            <h2 class="ai-organiser-title">Upload a report →<br>PAWS extracts what matters.</h2>
+          </div>
+
+          <!-- Document Upload Box with preset options -->
+          <div class="uploaded-report-box" onclick="triggerReportUpload('blood_report_august.pdf')" title="Click to process with AI">
+            <div class="report-file-name">
+              <span>blood_report_august.pdf</span>
+              <span style="font-size: 14px;">📄</span>
+            </div>
+            <div class="report-file-status">CBC Blood Panel • 14 fields ready</div>
+          </div>
+
+          <!-- Hidden File Input for Custom Uploads -->
+          <input type="file" id="report-file-picker" style="display: none;" onchange="handleCustomReportSelect(event)">
+          
+          <button class="btn-card-directions" style="width: 100%; justify-content: center; margin-bottom: 10px;" onclick="document.getElementById('report-file-picker').click()">
+            📁 Choose Another Report / PDF
+          </button>
+
+          <!-- Action CTA -->
+          <button class="btn-view-summary" onclick="triggerReportUpload('blood_report_august.pdf')">
+            Upload & Process with PAWS AI
+          </button>
+
+          <!-- Disclaimer -->
+          <p class="ai-organiser-disclaimer">
+            AI helps organise information — It does not diagnose.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SCREEN 04 — AI SUMMARY
+         ==================================================================== -->
+    <section id="screen-04" class="screen-pane">
+      <div class="screen-title-group">
+        <h1 class="screen-heading">Report summary</h1>
+        <p class="screen-subheading">Blood report • uploaded Aug 28 • Organised by PAWS AI</p>
+      </div>
+
+      <!-- What PAWS Found Status Card -->
+      <div class="summary-status-card">
+        <div class="summary-status-title">What PAWS found</div>
+        <div class="summary-badges-wrap">
+          <span class="badge-extracted">14 details extracted</span>
+          <span class="badge-discuss" style="background: #FFF4E5; color: #8C551C; font-weight: 700;">1 medication detected</span>
+          <span class="badge-discuss">1 follow-up reminder</span>
+          <span class="summary-safe-notice">AI helps organise information and does not provide a veterinary diagnosis.</span>
+        </div>
+      </div>
+
+      <!-- Stacked Insights Cards -->
+      <div class="summary-cards-stack">
+
+        <!-- Card 1: Key Information -->
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Key information</div>
+          <div class="summary-card-main">Haemoglobin: 12.8 g/dL • WBC: 9.2 × 10³/µL</div>
+          <div class="summary-card-sub">Extracted from the uploaded report</div>
+          
+          <button class="panel-expand-btn" id="btn-expand-labs" onclick="toggleLabPanel()">
+            Show full lab panel (14 values) ▾
+          </button>
+
+          <!-- Complete Lab Table -->
+          <table class="lab-breakdown-table" id="full-lab-table">
+            <thead>
+              <tr>
+                <th>Biomarker</th>
+                <th>Measured Value</th>
+                <th>Canine Reference Range</th>
+                <th>Interpretation Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Haemoglobin (Hb)</td>
+                <td>12.8 g/dL</td>
+                <td>12.0 – 18.0 g/dL</td>
+                <td><span class="lab-status-normal">Normal</span></td>
+              </tr>
+              <tr>
+                <td>White Blood Cells (WBC)</td>
+                <td>9.2 × 10³/µL</td>
+                <td>6.0 – 17.0 × 10³/µL</td>
+                <td><span class="lab-status-normal">Normal</span></td>
+              </tr>
+              <tr>
+                <td>Eosinophils</td>
+                <td>1.4 × 10³/µL</td>
+                <td>0.1 – 1.2 × 10³/µL</td>
+                <td><span class="lab-status-flag">Mild Elevation (Discuss allergy/parasite)</span></td>
+              </tr>
+              <tr>
+                <td>Serum Creatinine</td>
+                <td>1.5 mg/dL</td>
+                <td>0.5 – 1.4 mg/dL</td>
+                <td><span class="lab-status-flag">Borderline (Discuss hydration)</span></td>
+              </tr>
+              <tr>
+                <td>Platelets</td>
+                <td>280 × 10³/µL</td>
+                <td>175 – 500 × 10³/µL</td>
+                <td><span class="lab-status-normal">Normal</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Card 2: Medication Mention -->
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Medication</div>
+          <div class="summary-card-main">Cetirizine · once daily</div>
+          <div class="summary-card-sub">Detected in the attached prescription for skin allergy</div>
+        </div>
+
+        <!-- Card 3: Follow-Up Cue -->
+        <div class="summary-item-card">
+          <div class="summary-card-tag">Follow-up</div>
+          <div class="summary-card-main">Follow-up mentioned in report.</div>
+          <div class="summary-card-sub">AI helps organise information and does not provide a veterinary diagnosis.</div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Loop Closer Banner -->
+      <div class="summary-next-step-banner">
+        <div class="summary-next-text">Next step: share this organised summary with your veterinarian.</div>
+        <div class="summary-btn-group">
+          <button class="btn-add-to-passport" id="btn-add-to-passport" onclick="addExtractedReportToPassport()">
+            Add to Care Passport
+          </button>
+          <button class="btn-find-vet-outline" onclick="openCareDiscovery('all')">
+            Find a vet
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       Generic Action & Sign In Modal
+       ====================================================================== -->
+  <div class="modal-overlay" id="generic-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="generic-modal-title">Provider Action</h3>
+        <button class="modal-close-btn" onclick="closeGenericModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="generic-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Emergency Triage Flow Modal (Bruno needs urgent care)
+       ====================================================================== -->
+  <div class="modal-overlay" id="emergency-triage-modal">
+    <div class="modal-dialog" style="max-width: 580px; border: 2px solid var(--emergency-dark);">
+      <div class="modal-header" style="background: var(--emergency-light);">
+        <div>
+          <span style="font-size: 11px; font-weight: 800; color: var(--emergency-dark); text-transform: uppercase; letter-spacing: 0.5px;">🚨 Emergency Care Fast-Track</span>
+          <h3 id="triage-modal-heading" style="color: var(--emergency-dark); font-size: 19px; font-weight: 800;">Bruno needs urgent care</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeEmergencyTriageFlow()">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Animal Selection Pill -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <div class="triage-step-label">Patient Under Care</div>
+            <div class="triage-animal-chip" id="triage-patient-chip">
+              <span>🐾 Bruno (Golden Retriever • 4 yrs)</span>
+            </div>
+          </div>
+          <button class="btn-rescue-subaction" onclick="toggleRescueModeInTriage()" id="btn-triage-switch-animal">
+            Switch to Rescued Stray
+          </button>
+        </div>
+
+        <!-- Step 1: Select Issue -->
+        <div class="triage-step-label">1. What is the emergency issue?</div>
+        <div class="triage-issues-grid">
+          <button class="triage-issue-btn active" onclick="selectTriageIssue(this, 'Trauma / Acute Bleeding')">
+            <span>🩸</span> Bleeding / Wound
+          </button>
+          <button class="triage-issue-btn" onclick="selectTriageIssue(this, 'Breathing Distress / Choking')">
+            <span>🫁</span> Breathing Difficulty
+          </button>
+          <button class="triage-issue-btn" onclick="selectTriageIssue(this, 'Ingested Toxin / Poison')">
+            <span>🧪</span> Poison / Toxin
+          </button>
+          <button class="triage-issue-btn" onclick="selectTriageIssue(this, 'Sudden Collapse / Shock')">
+            <span>🐾</span> Collapse / Stumble
+          </button>
+          <button class="triage-issue-btn" onclick="selectTriageIssue(this, 'Fracture / Extreme Pain')">
+            <span>⚠️</span> Severe Limp / Pain
+          </button>
+        </div>
+
+        <!-- Step 2: Location & Urgency -->
+        <div style="background: var(--bg-card-subtle); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Location</div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">📍 Sector Alpha II, Greater Noida</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Priority</div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--emergency-dark);">🔴 Immediate (Level 1)</div>
+          </div>
+        </div>
+
+        <!-- Step 3: Nearby Emergency Providers Surfaced -->
+        <div class="triage-step-label">2. Nearby Verified Emergency Facilities</div>
+        
+        <!-- Emergency Provider 1: Green Paws (Feature 4 Example) -->
+        <div class="emergency-facility-card" style="border-left: 4px solid var(--primary-forest);">
+          <div class="emergency-facility-header">
+            <div>
+              <div class="emergency-facility-title">Green Paws Veterinary Clinic</div>
+              <div class="emergency-facility-meta">1.2 km • Open now • Emergency support • Ambulance available</div>
+            </div>
+            <span class="lab-status-flag" style="background: var(--primary-forest); color: white;">Emergency Support</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn-card-call" style="flex: 1; justify-content: center;" onclick="callProviderAction('provider-green-paws'); closeEmergencyTriageFlow();">
+              <span>📞</span> Call now (+91 98100 12345)
+            </button>
+            <button class="btn-card-directions" style="flex: 1; justify-content: center;" onclick="openDirectionsAction('provider-green-paws'); closeEmergencyTriageFlow();">
+              <span>🗺️</span> Get directions (3 min)
+            </button>
+          </div>
+        </div>
+
+        <!-- Emergency Provider 2: PetCare 24x7 -->
+        <div class="emergency-facility-card">
+          <div class="emergency-facility-header">
+            <div>
+              <div class="emergency-facility-title">PetCare 24×7 Emergency Hospital</div>
+              <div class="emergency-facility-meta">2.4 km • Open now (24 Hours) • Standby Pet Ambulance • Trauma ICU</div>
+            </div>
+            <span class="lab-status-flag" style="background: var(--emergency-dark); color: white;">ER Ready</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn-card-call emergency-call" style="flex: 1; justify-content: center;" onclick="callProviderAction('provider-petcare'); closeEmergencyTriageFlow();">
+              <span>📞</span> Call Now (+91 98100 24700)
+            </button>
+            <button class="btn-card-directions" style="flex: 1; justify-content: center;" onclick="openDirectionsAction('provider-petcare'); closeEmergencyTriageFlow();">
+              <span>🗺️</span> Get directions (5 min)
+            </button>
+          </div>
+        </div>
+
+        <!-- Emergency Provider 3: Ambulance -->
+        <div class="emergency-facility-card" style="background: #FFF8EB; border-color: #F0C379;">
+          <div class="emergency-facility-header">
+            <div>
+              <div class="emergency-facility-title" style="color: #8C551C;">City Paws Standby Ambulance</div>
+              <div class="emergency-facility-meta">1.8 km • Paramedic onboard • Oxygen & ICU cage equipped</div>
+            </div>
+            <span class="lab-status-flag" style="background: #D9822B; color: white;">Standby</span>
+          </div>
+          <div style="margin-top: 10px;">
+            <button class="btn-card-call emergency-call" style="width: 100%; justify-content: center; background: #8C551C;" onclick="requestPetAmbulance(); closeEmergencyTriageFlow();">
+              <span>🚑</span> Dispatch Pet Ambulance (ETA 6 Mins)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       AI Report Processing Modal (PAWS AI is organising your report...)
+       ====================================================================== -->
+  <div class="modal-overlay" id="ai-processing-modal">
+    <div class="modal-dialog" style="max-width: 460px;">
+      <div class="modal-body ai-processing-box">
+        <div class="ai-pulse-icon">🐾</div>
+        <h3 id="ai-modal-status-title" style="font-size: 20px; font-weight: 800; color: var(--primary-forest); margin-bottom: 6px;">
+          Uploading...
+        </h3>
+        <p style="font-size: 13px; color: var(--text-muted);">
+          Extracting clinical biomarkers, active medications, and safe vet follow-ups.
+        </p>
+
+        <!-- Progress Track -->
+        <div class="ai-progress-track">
+          <div class="ai-progress-bar-fill" id="ai-progress-bar-fill"></div>
+        </div>
+
+        <!-- Step List -->
+        <div class="ai-steps-list">
+          <div class="ai-step-row completed" id="ai-step-1">
+            <span class="step-icon">✓</span>
+            <span>1. Scanning document layout & OCR text extraction</span>
+          </div>
+          <div class="ai-step-row pending" id="ai-step-2">
+            <span class="step-icon">⏳</span>
+            <span>2. Normalizing 14 canine biomarkers to standard reference ranges</span>
+          </div>
+          <div class="ai-step-row pending" id="ai-step-3">
+            <span class="step-icon">⏳</span>
+            <span>3. Detecting medication (Cetirizine) & vet follow-up cues</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Rescue Mode: Add Treatment Information Modal
+       ====================================================================== -->
+  <div class="modal-overlay" id="rescue-treatment-modal">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="color: #73420E;">📝 Add Treatment Information (Rescued Stray)</h3>
+        <button class="modal-close-btn" onclick="closeAddTreatmentModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="rescue-treatment-form" onsubmit="event.preventDefault(); handleRescueTreatmentSubmit();">
+          <div class="form-group">
+            <label class="form-label">Patient</label>
+            <input type="text" class="form-input" id="input-treatment-patient" value="Unknown Dog (Rescue #104)" readonly style="background: var(--bg-card-subtle);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Immediate Intervention Provided</label>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+              <label style="font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chk-wound" checked> Saline flush & wound cleaned
+              </label>
+              <label style="font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chk-antiseptic" checked> Betadine / Antiseptic spray applied
+              </label>
+              <label style="font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chk-food"> Rehydration fluid & food provided
+              </label>
+              <label style="font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chk-splint"> Temporary paw bandage applied
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rescuer Notes for Next Volunteer / Vet Handoff</label>
+            <textarea class="form-input" id="input-treatment-notes" rows="3" placeholder="e.g. Limping left forelimb; alert and responsive. Needs rabies assessment at clinic.">Limping on front left paw. Wound cleaned with saline. Responded calmly.</textarea>
+          </div>
+          <button type="submit" class="btn-card-call" style="width: 100%; justify-content: center; padding: 12px; font-weight: 800;">
+            Save Treatment to Care Passport
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast-notification"></div>
+
+  <script src="app.js?v=2"></script>
+</body>
+</html>
