@@ -51,12 +51,12 @@ const SAMPLE_VERIFIED_DATA = {
 };
 
 const SYSTEM_PROMPT = `You are organising information from a veterinary medical document.
-Extract only information explicitly present in the supplied document.
+Extract ONLY information explicitly present in the supplied document.
 
 Return structured JSON containing, where available:
-* animal (object with name and species/breed, or null)
-* report_date (YYYY-MM-DD or readable string, or null)
-* vet_facility (clinic name or attending vet, or null)
+* animal (object with name, species, breed, or null)
+* report_date (YYYY-MM-DD or readable string as stated in document, or null)
+* vet_facility (clinic name or attending vet explicitly mentioned, or null)
 * medications (array of objects: { name, frequency, dosage, instructions })
 * vaccinations (array of objects: { name, status, due_date })
 * measurements (array of objects: { name, value, reference_range, status })
@@ -64,11 +64,13 @@ Return structured JSON containing, where available:
 * follow_up (summary string of explicit follow-up instructions, or null)
 * follow_up_date (YYYY-MM-DD or explicit date mentioned for next check-in, or null)
 
-CRITICAL RULES:
-- Do NOT infer missing information.
-- Do NOT diagnose the animal.
-- Do NOT provide medical advice.
-- If a field is not present, return null or an empty array.
+STRICT EXTRACTION RULES:
+- Traceability: Every single returned field MUST be traceable directly to words in the source text.
+- No Hallucinations or Additions: Do NOT add explanations, indications, purposes, interpretations, or medical context that are not explicitly present in the source document (e.g., if medication instructions state "1 tablet once daily", do NOT add inferred purposes such as "for blood pressure" or "for kidney disease").
+- Preserve Medication Instructions: Preserve medication dosage, frequency, and instructions verbatim as stated in the source text.
+- Explicit Status Labels: For measurement status (e.g., "Normal", "Elevated", "Mild Elevation", "Low"), extract the label ONLY when it is explicitly stated in the document text (such as an explicit column or text flag). Do NOT independently clinically or medically interpret raw numeric values. If no explicit status or evaluation is stated in the report, return null.
+- Zero Clinical Inference: Do NOT diagnose the animal, do NOT speculate, and do NOT provide medical advice.
+- Missing Fields: If a field is not present in the document, return null or an empty array.
 - Output ONLY valid JSON matching this schema, without markdown formatting or code fences.`;
 
 async function callGemini(apiKey, text) {
